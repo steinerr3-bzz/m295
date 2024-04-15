@@ -1,10 +1,10 @@
-
-const args = process.argv.slice(2);
+const args = process.argv;
 
 let sum = 0;
 
-for (let i = 0; i < args.length; i++) {
+for (let i = 2; i < args.length; i++) {
     sum += Number(args[i]);
 }
 
 console.log(sum);
+

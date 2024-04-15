@@ -1,14 +1,13 @@
 const fs = require('fs');
 
-const filePath = process.argv[2];
-fs.readFile(filePath, 'utf8', function(err, data) {
-    if (err) {
-        console.error("Error", err);
-        return;
-    }
-    const numNewLines = data.split('\n').length - 1;
+const fileName = process.argv[2];
+
+fs.readFile(fileName, whenDoneReadingCallback);
+
+function whenDoneReadingCallback(err, data) {
+    const content = data.toString()
+    const numNewLines = content.split('\n').length - 1;
 
     console.log(numNewLines);
-});
-
+}
 
