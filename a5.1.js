@@ -1,77 +1,86 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require('express')
+const app = express()
 
-const app = express();
+app.use(express.json())
 
-
-app.use(bodyParser.json());
-
-const books = []; // Dies wird als einfacher Ersatz für eine Datenbank verwendet.
-
-app.get('/books', (req, res) => {
-    res.json(books);
-});
-
-app.get('/books/:isbn', (req, res) => {
-    const book = books.find(b => b.isbn === req.params.isbn);
-    if (book) {
-        res.json(book);
-    } else {
-        res.status(404).send('Buch nicht gefunden');
+let books = [
+    {
+        isbn: '9783453318789',
+        title: 'Der Nasse Fisch',
+        author: 'Volker Kutscher',
+        year: 2008
+    },
+    {
+        isbn: '9783552059087',
+        title: 'Gone Girl - Das perfekte Opfer',
+        author: 'Gillian Flynn',
+        year: 2012
+    },
+    {
+        isbn: '9783257237274',
+        title: 'Der Schwarm',
+        author: 'Frank SchÃ¤tzing',
+        year: 2004
     }
-});
+]
 
-app.post('/books', (req, res) => {
-    const book = req.body;
-    if (book.isbn && book.title && book.year && book.author) {
-        books.push(book);
-        res.status(201).json(book);
+app.get("/books", (request, response) => {
+    const booksOverview = books.map(book => ({ isbn: book.isbn, title: book.title }))
+    response.json(booksOverview)
+})
+
+app.get("/books/:isbn", (request, response) => {
+    const isbn = request.params.isbn
+    const book = books.find(b => b.isbn == isbn)
+
+    if(!book) return response.sendStatus(404)
+
+    response.json(book)
+})
+
+app.post("/books", (request, response) => {
+    const newBook = request.body
+
+    if(isValid(newBook)) {
+        books.push(newBook)
+        response.json(newBook)
     } else {
-        res.status(422).send('Unvollständige Daten');
+        response.sendStatus(422)
     }
-});
+})
 
-app.put('/books/:isbn', (req, res) => {
-    const index = books.findIndex(b => b.isbn === req.params.isbn);
-    if (index !== -1) {
-        const updatedBook = req.body;
-        if (updatedBook.isbn && updatedBook.title && updatedBook.year && updatedBook.author) {
-            books[index] = updatedBook;
-            res.json(updatedBook);
-        } else {
-            res.status(422).send('Unvollständige Daten');
-        }
-    } else {
-        res.status(404).send('Buch nicht gefunden');
+app.delete("/books/:isbn", (request, response) => {
+    const isbn = request.params.isbn
+    const bookIndex = books.findIndex(b => b.isbn == isbn)
+
+    if(bookIndex < 0) {
+        return response.sendStatus(404)
     }
-});
+    books.splice(bookIndex, 1)
+    response.sendStatus(204)
+})
 
-app.delete('/books/:isbn', (req, res) => {
-    const index = books.findIndex(b => b.isbn === req.params.isbn);
-    if (index !== -1) {
-        books.splice(index, 1);
-        res.status(204).send();
-    } else {
-        res.status(404).send('Buch nicht gefunden');
+app.put("/books/:isbn", (request, response) => {
+    const isbn = request.params.isbn
+    const bookIndex = books.findIndex(b => b.isbn == isbn)
+    const bookToUpdate = request.body
+
+    if(bookIndex < 0) {
+        return response.sendStatus(404)
     }
-});
-
-app.patch('/books/:isbn', (req, res) => {
-    const book = books.find(b => b.isbn === req.params.isbn);
-    if (book) {
-        const updatedFields = req.body;
-        if (updatedFields.isbn || updatedFields.title || updatedFields.year || updatedFields.author) {
-            Object.assign(book, updatedFields);
-            res.json(book);
-        } else {
-            res.status(422).send('Unvollständige Daten');
-        }
-    } else {
-        res.status(404).send('Buch nicht gefunden');
+    if(!isValid(bookToUpdate)) {
+        return response.sendStatus(422)
     }
-});
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server läuft auf Port ${PORT}`);
-});
+    books.splice(bookIndex, 1, bookToUpdate)
+    response.status(200).json(bookToUpdate)
+})
+
+function isValid(book) {
+    return book.isbn !== undefined && book.isbn !== "" &&
+        book.title !== undefined && book.title !== "" &&
+        book.author !== undefined && book.author !== "" &&
+        book.year !== undefined && book.year !== ""
+}
+
+app.listen(3000)
