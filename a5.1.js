@@ -31,7 +31,7 @@ app.get("/books", (request, response) => {
 
 app.get("/books/:isbn", (request, response) => {
     const isbn = request.params.isbn
-    const book = books.find(b => b.isbn == isbn)
+    const book = books.find(b => b.isbn === isbn)
 
     if(!book) return response.sendStatus(404)
 
@@ -51,7 +51,7 @@ app.post("/books", (request, response) => {
 
 app.delete("/books/:isbn", (request, response) => {
     const isbn = request.params.isbn
-    const bookIndex = books.findIndex(b => b.isbn == isbn)
+    const bookIndex = books.findIndex(b => b.isbn === isbn)
 
     if(bookIndex < 0) {
         return response.sendStatus(404)
@@ -62,7 +62,7 @@ app.delete("/books/:isbn", (request, response) => {
 
 app.put("/books/:isbn", (request, response) => {
     const isbn = request.params.isbn
-    const bookIndex = books.findIndex(b => b.isbn == isbn)
+    const bookIndex = books.findIndex(b => b.isbn === isbn)
     const bookToUpdate = request.body
 
     if(bookIndex < 0) {
